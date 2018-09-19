@@ -18,11 +18,11 @@ syno_dict = load_word_pair(path_syno)
 
 
 def save_pair(path, pairs):
-    head = 'text1,text2,flag'
+    head = 'text1,text2,dist'
     with open(path, 'w') as f:
         f.write(head + '\n')
-        for text1, text2, flag in pairs:
-            f.write(text1 + ',' + text2 + ',' + str(flag) + '\n')
+        for text1, text2, dist in pairs:
+            f.write(text1 + ',' + text2 + ',' + str(dist) + '\n')
 
 
 def make_pair(path_univ_dir, path_train_pair, path_test_pair):
@@ -45,10 +45,10 @@ def make_pair(path_univ_dir, path_train_pair, path_test_pair):
             if j != i:
                 rest_texts.extend(label_texts[labels[j]])
         for j in range(len(texts) - 1):
-            pairs.append((texts[j], texts[j - 1], 1))
+            pairs.append((texts[j], texts[j - 1], 0))
             neg_texts = sample(rest_texts, fold)
             for neg_text in neg_texts:
-                pairs.append((texts[j], neg_text, 0))
+                pairs.append((texts[j], neg_text, 1))
     shuffle(pairs)
     bound = int(len(pairs) * 0.9)
     save_pair(path_train_pair, pairs[:bound])

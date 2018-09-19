@@ -56,18 +56,18 @@ def vectorize(path_data, path_sent, path_label, mode):
         pk.dump(labels, f)
 
 
-def vectorize_pair(path_data, path_pair, path_flag):
+def vectorize_pair(path_data, path_pair, path_dist):
     sent1s = flat_read(path_data, 'text1')
     sent2s = flat_read(path_data, 'text2')
-    flags = flat_read(path_data, 'flag')
+    dists = flat_read(path_data, 'dist')
     pad_seq1s = align(sent1s, path_word2ind)
     pad_seq2s = align(sent2s, path_word2ind)
     pairs = (pad_seq1s, pad_seq2s)
-    flags = np.array(flags)
+    dists = np.array(dists)
     with open(path_pair, 'wb') as f:
         pk.dump(pairs, f)
-    with open(path_flag, 'wb') as f:
-        pk.dump(flags, f)
+    with open(path_dist, 'wb') as f:
+        pk.dump(dists, f)
 
 
 if __name__ == '__main__':
@@ -81,9 +81,9 @@ if __name__ == '__main__':
     vectorize(path_data, path_sent, path_label, 'test')
     path_data = 'data/train_pair.csv'
     path_pair = 'feat/pair_train.pkl'
-    path_flag = 'feat/flag_train.pkl'
-    vectorize_pair(path_data, path_pair, path_flag)
+    path_dist = 'feat/dist_train.pkl'
+    vectorize_pair(path_data, path_pair, path_dist)
     path_data = 'data/test_pair.csv'
     path_pair = 'feat/pair_test.pkl'
-    path_flag = 'feat/flag_test.pkl'
-    vectorize_pair(path_data, path_pair, path_flag)
+    path_dist = 'feat/dist_test.pkl'
+    vectorize_pair(path_data, path_pair, path_dist)

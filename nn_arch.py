@@ -1,6 +1,6 @@
 from keras.layers import Dense, SeparableConv1D, LSTM
 from keras.layers import Dropout, GlobalMaxPooling1D, BatchNormalization, Masking
-from keras.layers import Lambda, Concatenate, Subtract, Multiply
+from keras.layers import Lambda, Subtract, Concatenate, Reshape
 
 import keras.backend as K
 
@@ -8,18 +8,15 @@ import keras.backend as K
 def dnn(embed_input1, embed_input2):
     da1 = Dense(200, activation='relu')
     da2 = Dense(200, activation='relu')
-    da3 = Dense(1, activation='sigmoid')
     x = Lambda(lambda a: K.mean(a, axis=1))(embed_input1)
     x = da1(x)
     x = da2(x)
     y = Lambda(lambda a: K.mean(a, axis=1))(embed_input2)
     y = da1(y)
     y = da2(y)
-    diff = Lambda(lambda a: K.abs(a))(Subtract()([x, y]))
-    prod = Multiply()([x, y])
-    z = Concatenate()([x, y, diff, prod])
-    z = Dropout(0.5)(z)
-    return da3(z)
+    z = Subtract()([x, y])
+    z = Lambda(lambda a: K.sum(K.square(a), axis=1))(z)
+    return Reshape((1,))(z)
 
 
 def cnn(embed_input1, embed_input2):
