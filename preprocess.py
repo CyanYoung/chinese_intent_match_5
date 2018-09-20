@@ -18,11 +18,11 @@ syno_dict = load_word_pair(path_syno)
 
 
 def save_pair(path, pairs):
-    head = 'text1,text2,dist'
+    head = 'text1,text2,flag'  # dist
     with open(path, 'w') as f:
         f.write(head + '\n')
-        for text1, text2, dist in pairs:
-            f.write(text1 + ',' + text2 + ',' + str(dist) + '\n')
+        for text1, text2, flag in pairs:
+            f.write(text1 + ',' + text2 + ',' + str(flag) + '\n')
 
 
 def make_pair(path_univ_dir, path_train_pair, path_test_pair):

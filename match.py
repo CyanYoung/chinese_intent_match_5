@@ -4,10 +4,15 @@ import re
 
 import numpy as np
 
-from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences
 
 from util import load_word_re, load_type_re, load_word_pair, word_replace, flat_read, map_item
+
+
+def load_model(name, embed_mat, seq_len, paths):
+    model = compile(name, embed_mat, seq_len)
+    model.load_weights(map_item(name, paths))
+    return model
 
 
 seq_len = 30

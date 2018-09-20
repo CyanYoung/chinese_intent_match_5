@@ -5,21 +5,32 @@ from keras.layers import Lambda, Subtract, Concatenate, Reshape
 import keras.backend as K
 
 
-def dnn(embed_input1, embed_input2):
-    da1 = Dense(200, activation='relu')
-    da2 = Dense(200, activation='relu')
-    x = Lambda(lambda a: K.mean(a, axis=1))(embed_input1)
+def dnn_build(embed_input1, embed_input2):
+    mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
+    da1 = Dense(200, activation='relu', name='encode1')
+    da2 = Dense(200, activation='relu', name='encode2')
+    dist = Lambda(lambda a: K.sum(K.square(a), axis=1))
+    x = mean(embed_input1)
     x = da1(x)
     x = da2(x)
-    y = Lambda(lambda a: K.mean(a, axis=1))(embed_input2)
+    y = mean(embed_input2)
     y = da1(y)
     y = da2(y)
     z = Subtract()([x, y])
-    z = Lambda(lambda a: K.sum(K.square(a), axis=1))(z)
+    z = dist(z)
     return Reshape((1,))(z)
 
 
-def cnn(embed_input1, embed_input2):
+def dnn_cache(embed_input):
+    mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
+    da1 = Dense(200, activation='relu', name='encode1')
+    da2 = Dense(200, activation='relu', name='encode2')
+    x = mean(embed_input)
+    x = da1(x)
+    return da2(x)
+
+
+def cnn_build(embed_input1, embed_input2):
     ca1 = SeparableConv1D(filters=64, kernel_size=1, padding='same', activation='relu')
     ca2 = SeparableConv1D(filters=64, kernel_size=2, padding='same', activation='relu')
     ca3 = SeparableConv1D(filters=64, kernel_size=3, padding='same', activation='relu')
@@ -51,7 +62,11 @@ def cnn(embed_input1, embed_input2):
     return da(z)
 
 
-def rnn(embed_input1, embed_input2):
+def cnn_cache(embed_input):
+    pass
+
+
+def rnn_build(embed_input1, embed_input2):
     ra = LSTM(200, activation='tanh')
     da = Dense(1, activation='sigmoid')
     x = Masking()(embed_input1)
@@ -63,3 +78,7 @@ def rnn(embed_input1, embed_input2):
     z = Concatenate()([x, y, diff, prod])
     z = Dropout(0.5)(z)
     return da(z)
+
+
+def rnn_cache(embed_input):
+    pass
