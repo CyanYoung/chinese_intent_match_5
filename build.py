@@ -73,6 +73,6 @@ def fit(name, epoch, embed_mat, pairs, flags):
 
 
 if __name__ == '__main__':
-    fit('dnn', 30, embed_mat, pairs, flags)
-    # fit('cnn', 30, embed_mat, pairs, flags)
-    # fit('rnn', 30, embed_mat, pairs, flags)
+    fit('dnn', 10, embed_mat, pairs, flags)
+    fit('cnn', 10, embed_mat, pairs, flags)
+    fit('rnn', 10, embed_mat, pairs, flags)

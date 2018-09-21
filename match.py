@@ -11,6 +11,12 @@ from encode import load_model
 from util import load_word_re, load_type_re, load_word_pair, word_replace, flat_read, map_item
 
 
+def load_cache(path_cache):
+    with open(path_cache, 'rb') as f:
+        cache = pk.load(f)
+    return cache
+
+
 seq_len = 30
 
 path_stop_word = 'dict/stop_word.txt'
@@ -23,13 +29,10 @@ homo_dict = load_word_pair(path_homo)
 syno_dict = load_word_pair(path_syno)
 
 path_train = 'data/train.csv'
-path_sent = 'feat/sent_train.pkl'
 path_label = 'feat/label_train.pkl'
 path_embed = 'feat/embed.pkl'
 path_word2ind = 'model/word2ind.pkl'
 texts = flat_read(path_train, 'text')
-with open(path_sent, 'rb') as f:
-    sents = pk.load(f)
 with open(path_label, 'rb') as f:
     labels = pk.load(f)
 with open(path_embed, 'rb') as f:
@@ -41,6 +44,14 @@ models = {'dnn': load_model('dnn', embed_mat, seq_len),
           'cnn': load_model('cnn', embed_mat, seq_len),
           'rnn': load_model('rnn', embed_mat, seq_len)}
 
+paths = {'dnn': 'cache/dnn.pkl',
+         'cnn': 'cache/cnn.pkl',
+         'rnn': 'cache/rnn.pkl'}
+
+caches = {'dnn': load_cache(map_item('dnn', paths)),
+          'cnn': load_cache(map_item('dnn', paths)),
+          'rnn': load_cache(map_item('dnn', paths))}
+
 
 def predict(text, name):
     text = re.sub(stop_word_re, '', text.strip())
@@ -48,12 +59,13 @@ def predict(text, name):
         text = re.sub(word_re, word_type, text)
     text = word_replace(text, homo_dict)
     text = word_replace(text, syno_dict)
+    cache_sents = map_item(name, caches)
     seq = word2ind.texts_to_sequences([text])[0]
     pad_seq = pad_sequences([seq], maxlen=seq_len)
     model = map_item(name, models)
-    pad_mat = np.repeat(pad_seq, len(sents), axis=0)
-    dists = model.predict([pad_mat, sents])
-    dists = np.reshape(dists, (1, -1))[0]
+    encode_seq = model.predict([pad_seq])
+    encode_mat = np.repeat(encode_seq, len(cache_sents), axis=0)
+    dists = np.sqrt(np.sum(np.square(encode_mat - cache_sents), axis=1))
     min_dists = sorted(dists)[:3]
     min_inds = np.argsort(dists)[:3]
     min_preds = [labels[ind] for ind in min_inds]
@@ -65,8 +77,9 @@ def predict(text, name):
 
 
 if __name__ == '__main__':
-    while True:
-        text = input('text: ')
-        print('dnn: %s' % predict(text, 'dnn'))
-        # print('cnn: %s' % predict(text, 'cnn'))
-        # print('rnn: %s' % predict(text, 'rnn'))
+    print('dnn: %s' % predict('取消', 'dnn'))
+    # while True:
+    #     text = input('text: ')
+    #     print('dnn: %s' % predict(text, 'dnn'))
+    #     print('cnn: %s' % predict(text, 'cnn'))
+    #     print('rnn: %s' % predict(text, 'rnn'))

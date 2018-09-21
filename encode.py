@@ -2,17 +2,14 @@ import pickle as pk
 
 from keras.models import Model
 from keras.layers import Input, Embedding
-from keras.optimizers import Adam
 from keras.utils import plot_model
-
-from build import loss, acc
 
 from nn_arch import dnn_cache, cnn_cache, rnn_cache
 
 from util import map_item
 
 
-def compile(name, embed_mat, seq_len, funcs):
+def define_model(name, embed_mat, seq_len, funcs):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
                       weights=[embed_mat], input_length=seq_len, trainable=True)
@@ -21,15 +18,13 @@ def compile(name, embed_mat, seq_len, funcs):
     func = map_item(name, funcs)
     output = func(embed_input)
     model = Model(input, output)
-    model.summary()
     if __name__ == '__main__':
         plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
-    model.compile(loss=loss, optimizer=Adam(lr=0.001), metrics=[acc])
     return model
 
 
 def load_model(name, embed_mat, seq_len):
-    model = compile(name, embed_mat, seq_len, funcs)
+    model = define_model(name, embed_mat, seq_len, funcs)
     model.load_weights(map_item(name, paths), by_name=True)
     return model
 
@@ -54,7 +49,7 @@ paths = {'dnn': 'model/dnn.h5',
          'cnn_plot': 'model/plot/cnn_cache.png',
          'rnn_plot': 'model/plot/rnn_cache.png'}
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len),
+models = {'dnn': load_model('dnn', embed_mat, seq_len)
           'cnn': load_model('cnn', embed_mat, seq_len),
           'rnn': load_model('rnn', embed_mat, seq_len)}
 
@@ -63,7 +58,7 @@ def cache(name, sents, path_cache):
     model = map_item(name, models)
     encode_sents = model.predict(sents)
     with open(path_cache, 'wb') as f:
-        f.write(encode_sents)
+        pk.dump(encode_sents, f)
 
 
 if __name__ == '__main__':
