@@ -3,12 +3,35 @@ import pickle as pk
 from keras.models import Model
 from keras.layers import Input, Embedding
 from keras.optimizers import Adam
+from keras.utils import plot_model
 
-from build import bound_loss
+from build import loss, acc
 
 from nn_arch import dnn_cache, cnn_cache, rnn_cache
 
 from util import map_item
+
+
+def compile(name, embed_mat, seq_len, funcs):
+    vocab_num, embed_len = embed_mat.shape
+    embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
+                      weights=[embed_mat], input_length=seq_len, trainable=True)
+    input = Input(shape=(seq_len,), dtype='int32')
+    embed_input = embed(input)
+    func = map_item(name, funcs)
+    output = func(embed_input)
+    model = Model(input, output)
+    model.summary()
+    if __name__ == '__main__':
+        plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
+    model.compile(loss=loss, optimizer=Adam(lr=0.001), metrics=[acc])
+    return model
+
+
+def load_model(name, embed_mat, seq_len):
+    model = compile(name, embed_mat, seq_len, funcs)
+    model.load_weights(map_item(name, paths), by_name=True)
+    return model
 
 
 seq_len = 30
@@ -26,26 +49,18 @@ funcs = {'dnn': dnn_cache,
 
 paths = {'dnn': 'model/dnn.h5',
          'cnn': 'model/cnn.h5',
-         'rnn': 'model/rnn.h5'}
+         'rnn': 'model/rnn.h5',
+         'dnn_plot': 'model/plot/dnn_cache.png',
+         'cnn_plot': 'model/plot/cnn_cache.png',
+         'rnn_plot': 'model/plot/rnn_cache.png'}
+
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
-def compile(name, embed_mat, seq_len, funcs):
-    vocab_num, embed_len = embed_mat.shape
-    embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
-                      weights=[embed_mat], input_length=seq_len, trainable=True)
-    input = Input(shape=(seq_len,), dtype='int32')
-    embed_input = embed(input)
-    func = map_item(name, funcs)
-    output = func(embed_input)
-    model = Model(input, output)
-    model.summary()
-    model.compile(loss=bound_loss, optimizer=Adam(lr=0.001), metrics=['accuracy'])
-    return model
-
-
-def cache(name, embed_mat, seq_len, sents, path_cache):
-    model = compile(name, embed_mat, seq_len, funcs)
-    model.load_weights(map_item(name, paths), by_name=True)
+def cache(name, sents, path_cache):
+    model = map_item(name, models)
     encode_sents = model.predict(sents)
     with open(path_cache, 'wb') as f:
         f.write(encode_sents)
@@ -53,8 +68,8 @@ def cache(name, embed_mat, seq_len, sents, path_cache):
 
 if __name__ == '__main__':
     path_cache = 'cache/dnn.pkl'
-    cache('dnn', embed_mat, seq_len, sents, path_cache)
-    # path_cache = 'cache/cnn.pkl'
-    # cache('cnn', embed_mat, seq_len, sents, path_cache)
-    # path_cache = 'cache/rnn.pkl'
-    # cache('rnn', embed_mat, seq_len, sents, path_cache)
+    cache('dnn', sents, path_cache)
+    path_cache = 'cache/cnn.pkl'
+    cache('cnn', sents, path_cache)
+    path_cache = 'cache/rnn.pkl'
+    cache('rnn', sents, path_cache)

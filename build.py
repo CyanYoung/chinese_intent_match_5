@@ -4,6 +4,7 @@ from keras.models import Model
 from keras.layers import Input, Embedding
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
+from keras.utils import plot_model
 
 import keras.backend as K
 
@@ -30,11 +31,19 @@ funcs = {'dnn': dnn_build,
 
 paths = {'dnn': 'model/dnn.h5',
          'cnn': 'model/cnn.h5',
-         'rnn': 'model/rnn.h5'}
+         'rnn': 'model/rnn.h5',
+         'dnn_plot': 'model/plot/dnn_build.png',
+         'cnn_plot': 'model/plot/cnn_build.png',
+         'rnn_plot': 'model/plot/rnn_build.png'}
 
 
-def bound_loss(dist, flag):
-    return flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist
+def loss(dist, flag):
+    return K.mean(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist, axis=-1)
+
+
+def acc(dist, flag):
+    return K.mean(flag * K.cast(K.greater(dist, 0.5), K.floatx()) +
+                  (1.0 - flag) * K.cast(K.less_equal(dist, 0.5), K.floatx()), axis=-1)
 
 
 def compile(name, embed_mat, seq_len, funcs):
@@ -49,7 +58,8 @@ def compile(name, embed_mat, seq_len, funcs):
     output = func(embed_input1, embed_input2)
     model = Model([input1, input2], output)
     model.summary()
-    model.compile(loss=bound_loss, optimizer=Adam(lr=0.001), metrics=['accuracy'])
+    plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
+    model.compile(loss=loss, optimizer=Adam(lr=0.001), metrics=[acc])
     return model
 
 
@@ -65,4 +75,4 @@ def fit(name, epoch, embed_mat, pairs, flags):
 if __name__ == '__main__':
     fit('dnn', 30, embed_mat, pairs, flags)
     # fit('cnn', 30, embed_mat, pairs, flags)
-    # fit('rnn', 20, embed_mat, pairs, flags)
+    # fit('rnn', 30, embed_mat, pairs, flags)

@@ -6,13 +6,9 @@ import numpy as np
 
 from keras.preprocessing.sequence import pad_sequences
 
+from encode import load_model
+
 from util import load_word_re, load_type_re, load_word_pair, word_replace, flat_read, map_item
-
-
-def load_model(name, embed_mat, seq_len, paths):
-    model = compile(name, embed_mat, seq_len)
-    model.load_weights(map_item(name, paths))
-    return model
 
 
 seq_len = 30
@@ -29,22 +25,21 @@ syno_dict = load_word_pair(path_syno)
 path_train = 'data/train.csv'
 path_sent = 'feat/sent_train.pkl'
 path_label = 'feat/label_train.pkl'
+path_embed = 'feat/embed.pkl'
 path_word2ind = 'model/word2ind.pkl'
 texts = flat_read(path_train, 'text')
 with open(path_sent, 'rb') as f:
     sents = pk.load(f)
 with open(path_label, 'rb') as f:
     labels = pk.load(f)
+with open(path_embed, 'rb') as f:
+    embed_mat = pk.load(f)
 with open(path_word2ind, 'rb') as f:
     word2ind = pk.load(f)
 
-paths = {'dnn': 'model/dnn.h5',
-         'cnn': 'model/cnn.h5',
-         'rnn': 'model/rnn.h5'}
-
-models = {'dnn': load_model(map_item('dnn', paths)),
-          'cnn': load_model(map_item('cnn', paths)),
-          'rnn': load_model(map_item('rnn', paths))}
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
 def predict(text, name):
