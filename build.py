@@ -37,11 +37,11 @@ paths = {'dnn': 'model/dnn.h5',
          'rnn_plot': 'model/plot/rnn_build.png'}
 
 
-def loss(dist, flag):
+def clip_loss(dist, flag):
     return K.mean(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist, axis=-1)
 
 
-def acc(dist, flag):
+def clip_acc(dist, flag):
     return K.mean(flag * K.cast(K.greater(dist, 0.5), K.floatx()) +
                   (1.0 - flag) * K.cast(K.less_equal(dist, 0.5), K.floatx()), axis=-1)
 
@@ -59,7 +59,7 @@ def compile(name, embed_mat, seq_len, funcs):
     model = Model([input1, input2], output)
     model.summary()
     plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
-    model.compile(loss=loss, optimizer=Adam(lr=0.001), metrics=[acc])
+    model.compile(loss='mean_absolute_error', optimizer=Adam(lr=0.001), metrics=['accuracy'])
     return model
 
 
@@ -74,5 +74,5 @@ def fit(name, epoch, embed_mat, pairs, flags):
 
 if __name__ == '__main__':
     fit('dnn', 10, embed_mat, pairs, flags)
-    fit('cnn', 10, embed_mat, pairs, flags)
-    fit('rnn', 10, embed_mat, pairs, flags)
+    # fit('cnn', 10, embed_mat, pairs, flags)
+    # fit('rnn', 10, embed_mat, pairs, flags)

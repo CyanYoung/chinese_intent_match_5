@@ -49,7 +49,7 @@ paths = {'dnn': 'model/dnn.h5',
          'cnn_plot': 'model/plot/cnn_cache.png',
          'rnn_plot': 'model/plot/rnn_cache.png'}
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len)
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
           'cnn': load_model('cnn', embed_mat, seq_len),
           'rnn': load_model('rnn', embed_mat, seq_len)}
 

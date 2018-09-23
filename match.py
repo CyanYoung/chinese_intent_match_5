@@ -77,9 +77,8 @@ def predict(text, name):
 
 
 if __name__ == '__main__':
-    print('dnn: %s' % predict('取消', 'dnn'))
-    # while True:
-    #     text = input('text: ')
-    #     print('dnn: %s' % predict(text, 'dnn'))
-    #     print('cnn: %s' % predict(text, 'cnn'))
-    #     print('rnn: %s' % predict(text, 'rnn'))
+    while True:
+        text = input('text: ')
+        print('dnn: %s' % predict(text, 'dnn'))
+        print('cnn: %s' % predict(text, 'cnn'))
+        print('rnn: %s' % predict(text, 'rnn'))
