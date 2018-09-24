@@ -51,7 +51,7 @@ def test_pair(name, pairs, flags, thre):
     preds = dists > thre
     print('\n%s %s %.2f\n' % (name, 'acc:', accuracy_score(flags, preds)))
     for flag, dist, text1, text2, pred in zip(flags, dists, text1s, text2s, preds):
-        # if flag != pred:
+        if flag != pred:
             print('{} {:.3f} {} | {}'.format(flag, dist, text1, text2))
 
 
@@ -72,8 +72,8 @@ def test(name, test_sents, test_labels, train_sents, train_labels):
 
 if __name__ == '__main__':
     test_pair('dnn', pairs, flags, thre=0.5)
-    # test_pair('cnn', pairs, flags, thre=0.5)
-    # test_pair('rnn', pairs, flags, thre=0.5)
+    test_pair('cnn', pairs, flags, thre=0.5)
+    test_pair('rnn', pairs, flags, thre=0.5)
     test('dnn', test_sents, test_labels, train_sents, train_labels)
-    # test('cnn', test_sents, test_labels, train_sents, train_labels)
-    # test('rnn', test_sents, test_labels, train_sents, train_labels)
+    test('cnn', test_sents, test_labels, train_sents, train_labels)
+    test('rnn', test_sents, test_labels, train_sents, train_labels)
