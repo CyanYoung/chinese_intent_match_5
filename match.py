@@ -69,11 +69,14 @@ def predict(text, name):
     min_dists = sorted(dists)[:3]
     min_inds = np.argsort(dists)[:3]
     min_preds = [labels[ind] for ind in min_inds]
-    min_texts = [texts[ind] for ind in min_inds]
-    formats = list()
-    for pred, prob, text in zip(min_preds, min_dists, min_texts):
-        formats.append('{} {:.3f} {}'.format(pred, prob, text))
-    return ', '.join(formats)
+    if __name__ == '__main__':
+        min_texts = [texts[ind] for ind in min_inds]
+        formats = list()
+        for pred, prob, text in zip(min_preds, min_dists, min_texts):
+            formats.append('{} {:.3f} {}'.format(pred, prob, text))
+        return ', '.join(formats)
+    else:
+        return min_preds[0]
 
 
 if __name__ == '__main__':
