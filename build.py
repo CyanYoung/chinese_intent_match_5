@@ -46,7 +46,7 @@ def clip_acc(dist, flag):
                   (1.0 - flag) * K.cast(K.less_equal(dist, 0.5), K.floatx()), axis=-1)
 
 
-def compile(name, embed_mat, seq_len, funcs):
+def compile(name, embed_mat, seq_len):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
                       weights=[embed_mat], input_length=seq_len, trainable=True)
@@ -66,7 +66,7 @@ def compile(name, embed_mat, seq_len, funcs):
 def fit(name, epoch, embed_mat, pairs, flags):
     sent1s, sent2s = pairs
     seq_len = len(sent1s[0])
-    model = compile(name, embed_mat, seq_len, funcs)
+    model = compile(name, embed_mat, seq_len)
     check_point = ModelCheckpoint(map_item(name, paths), monitor='val_loss', verbose=True, save_best_only=True)
     model.fit([sent1s, sent2s], flags, batch_size=batch_size, epochs=epoch,
               verbose=True, callbacks=[check_point], validation_split=0.2)

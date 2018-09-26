@@ -40,10 +40,6 @@ with open(path_embed, 'rb') as f:
 with open(path_word2ind, 'rb') as f:
     word2ind = pk.load(f)
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len),
-          'cnn': load_model('cnn', embed_mat, seq_len),
-          'rnn': load_model('rnn', embed_mat, seq_len)}
-
 paths = {'dnn': 'cache/dnn.pkl',
          'cnn': 'cache/cnn.pkl',
          'rnn': 'cache/rnn.pkl'}
@@ -51,6 +47,10 @@ paths = {'dnn': 'cache/dnn.pkl',
 caches = {'dnn': load_cache(map_item('dnn', paths)),
           'cnn': load_cache(map_item('dnn', paths)),
           'rnn': load_cache(map_item('dnn', paths))}
+
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
 def predict(text, name):
