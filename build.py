@@ -50,8 +50,8 @@ def compile(name, embed_mat, seq_len, funcs):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
                       weights=[embed_mat], input_length=seq_len, trainable=True)
-    input1 = Input(shape=(seq_len,), dtype='int32')
-    input2 = Input(shape=(seq_len,), dtype='int32')
+    input1 = Input(shape=(seq_len,))
+    input2 = Input(shape=(seq_len,))
     embed_input1 = embed(input1)
     embed_input2 = embed(input2)
     func = map_item(name, funcs)
