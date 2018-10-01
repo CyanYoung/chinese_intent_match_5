@@ -37,11 +37,11 @@ paths = {'dnn': 'model/dnn.h5',
          'rnn_plot': 'model/plot/rnn_build.png'}
 
 
-def clip_loss(dist, flag):
+def clip_loss(flag, dist):
     return K.mean(K.square(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist), axis=-1)
 
 
-def clip_acc(dist, flag):
+def clip_acc(flag, dist):
     return K.mean(flag * K.cast(K.greater(dist, 0.5), K.floatx()) +
                   (1.0 - flag) * K.cast(K.less_equal(dist, 0.5), K.floatx()), axis=-1)
 
