@@ -38,7 +38,7 @@ paths = {'dnn': 'model/dnn.h5',
 
 
 def clip_loss(dist, flag):
-    return K.mean(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist, axis=-1)
+    return K.mean(K.square(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist), axis=-1)
 
 
 def clip_acc(dist, flag):
@@ -59,7 +59,7 @@ def compile(name, embed_mat, seq_len):
     model = Model([input1, input2], output)
     model.summary()
     plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
-    model.compile(loss='mean_absolute_error', optimizer=Adam(lr=0.001), metrics=['accuracy'])
+    model.compile(loss='mean_squared_error', optimizer=Adam(lr=0.001), metrics=['accuracy'])
     return model
 
 
