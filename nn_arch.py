@@ -9,15 +9,14 @@ def dnn_build(embed_input1, embed_input2):
     mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
     da1 = Dense(200, activation='relu', name='encode1')
     da2 = Dense(200, activation='relu', name='encode2')
-    dist = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
+    norm = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
     x = mean(embed_input1)
     x = da1(x)
     x = da2(x)
     y = mean(embed_input2)
     y = da1(y)
     y = da2(y)
-    z = Subtract()([x, y])
-    z = dist(z)
+    z = norm(Subtract()([x, y]))
     return Reshape((1,))(z)
 
 
@@ -37,7 +36,7 @@ def cnn_build(embed_input1, embed_input2):
     mp = GlobalMaxPooling1D()
     concat = Concatenate()
     da = Dense(200, activation='relu', name='encode')
-    dist = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
+    norm = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
     x1 = ca1(embed_input1)
     x1 = mp(x1)
     x2 = ca2(embed_input1)
@@ -54,8 +53,7 @@ def cnn_build(embed_input1, embed_input2):
     y3 = mp(y3)
     y = concat([y1, y2, y3])
     y = da(y)
-    z = Subtract()([x, y])
-    z = dist(z)
+    z = norm(Subtract()([x, y]))
     return Reshape((1,))(z)
 
 
@@ -78,13 +76,12 @@ def cnn_cache(embed_input):
 def rnn_build(embed_input1, embed_input2):
     mask = Masking()
     ra = LSTM(200, activation='tanh', name='encode')
-    dist = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
+    norm = Lambda(lambda a: K.sqrt(K.sum(K.square(a), axis=-1)))
     x = mask(embed_input1)
     x = ra(x)
     y = mask(embed_input2)
     y = ra(y)
-    z = Subtract()([x, y])
-    z = dist(z)
+    z = norm(Subtract()([x, y]))
     return Reshape((1,))(z)
 
 
