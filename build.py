@@ -59,7 +59,7 @@ def compile(name, embed_mat, seq_len):
     model = Model([input1, input2], output)
     model.summary()
     plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
-    model.compile(loss='mean_squared_error', optimizer=Adam(lr=0.001), metrics=['accuracy'])
+    model.compile(loss=pair_loss, optimizer=Adam(lr=0.001), metrics=[pair_acc])
     return model
 
 
