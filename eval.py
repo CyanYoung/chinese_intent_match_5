@@ -14,7 +14,7 @@ from match import predict
 from util import flat_read, map_item
 
 
-def define_model(name, embed_mat, seq_len, funcs):
+def define_model(name, embed_mat, seq_len):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
                       weights=[embed_mat], input_length=seq_len, trainable=True)
@@ -28,8 +28,8 @@ def define_model(name, embed_mat, seq_len, funcs):
     return model
 
 
-def load_model(name, embed_mat, seq_len, funcs):
-    model = define_model(name, embed_mat, seq_len, funcs)
+def load_model(name, embed_mat, seq_len):
+    model = define_model(name, embed_mat, seq_len)
     model.load_weights(map_item(name, paths), by_name=True)
     return model
 
@@ -63,9 +63,9 @@ paths = {'dnn': 'model/dnn.h5',
          'cnn': 'model/cnn.h5',
          'rnn': 'model/rnn.h5'}
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len, funcs),
-          'cnn': load_model('cnn', embed_mat, seq_len, funcs),
-          'rnn': load_model('rnn', embed_mat, seq_len, funcs)}
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
 def test_pair(name, pairs, flags, thre):

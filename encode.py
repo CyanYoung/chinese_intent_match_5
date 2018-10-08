@@ -9,7 +9,7 @@ from nn_arch import dnn_cache, cnn_cache, rnn_cache
 from util import map_item
 
 
-def define_model(name, embed_mat, seq_len, funcs):
+def define_model(name, embed_mat, seq_len):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
                       weights=[embed_mat], input_length=seq_len, trainable=True)
@@ -23,8 +23,8 @@ def define_model(name, embed_mat, seq_len, funcs):
     return model
 
 
-def load_model(name, embed_mat, seq_len, funcs):
-    model = define_model(name, embed_mat, seq_len, funcs)
+def load_model(name, embed_mat, seq_len):
+    model = define_model(name, embed_mat, seq_len)
     model.load_weights(map_item(name, paths), by_name=True)
     return model
 
@@ -49,9 +49,9 @@ paths = {'dnn': 'model/dnn.h5',
          'cnn_plot': 'model/plot/cnn_cache.png',
          'rnn_plot': 'model/plot/rnn_cache.png'}
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len, funcs),
-          'cnn': load_model('cnn', embed_mat, seq_len, funcs),
-          'rnn': load_model('rnn', embed_mat, seq_len, funcs)}
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
 def cache(name, sents, path_cache):

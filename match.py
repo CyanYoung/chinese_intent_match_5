@@ -6,8 +6,6 @@ import numpy as np
 
 from keras.preprocessing.sequence import pad_sequences
 
-from nn_arch import dnn_cache, cnn_cache, rnn_cache
-
 from encode import load_model
 
 from util import load_word_re, load_type_re, load_word_pair, word_replace, flat_read, map_item
@@ -42,10 +40,6 @@ with open(path_embed, 'rb') as f:
 with open(path_word2ind, 'rb') as f:
     word2ind = pk.load(f)
 
-funcs = {'dnn': dnn_cache,
-         'cnn': cnn_cache,
-         'rnn': rnn_cache}
-
 paths = {'dnn': 'cache/dnn.pkl',
          'cnn': 'cache/cnn.pkl',
          'rnn': 'cache/rnn.pkl'}
@@ -54,9 +48,9 @@ caches = {'dnn': load_cache(map_item('dnn', paths)),
           'cnn': load_cache(map_item('dnn', paths)),
           'rnn': load_cache(map_item('dnn', paths))}
 
-models = {'dnn': load_model('dnn', embed_mat, seq_len, funcs),
-          'cnn': load_model('cnn', embed_mat, seq_len, funcs),
-          'rnn': load_model('rnn', embed_mat, seq_len, funcs)}
+models = {'dnn': load_model('dnn', embed_mat, seq_len),
+          'cnn': load_model('cnn', embed_mat, seq_len),
+          'rnn': load_model('rnn', embed_mat, seq_len)}
 
 
 def predict(text, name):
