@@ -46,8 +46,8 @@ with open(path_embed, 'rb') as f:
     embed_mat = pk.load(f)
 
 path_test_pair = 'data/test_pair.csv'
-path_pair = 'feat/pair_train.pkl'
-path_flag = 'feat/flag_train.pkl'
+path_pair = 'feat/pair_test.pkl'
+path_flag = 'feat/flag_test.pkl'
 text1s = flat_read(path_test_pair, 'text1')
 text2s = flat_read(path_test_pair, 'text2')
 with open(path_pair, 'rb') as f:
