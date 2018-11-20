@@ -5,7 +5,7 @@ from keras.layers import Lambda, Concatenate, Subtract, Reshape
 import keras.backend as K
 
 
-def dnn_build(embed_input1, embed_input2):
+def dnn(embed_input1, embed_input2):
     mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
     da1 = Dense(200, activation='relu', name='encode1')
     da2 = Dense(200, activation='relu', name='encode2')
@@ -20,7 +20,7 @@ def dnn_build(embed_input1, embed_input2):
     return Reshape((1,))(z)
 
 
-def dnn_cache(embed_input):
+def dnn_encode(embed_input):
     mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
     da1 = Dense(200, activation='relu', name='encode1')
     da2 = Dense(200, activation='relu', name='encode2')
@@ -29,7 +29,7 @@ def dnn_cache(embed_input):
     return da2(x)
 
 
-def cnn_build(embed_input1, embed_input2):
+def cnn(embed_input1, embed_input2):
     ca1 = SeparableConv1D(filters=64, kernel_size=1, padding='same', activation='relu', name='conv1')
     ca2 = SeparableConv1D(filters=64, kernel_size=2, padding='same', activation='relu', name='conv2')
     ca3 = SeparableConv1D(filters=64, kernel_size=3, padding='same', activation='relu', name='conv3')
@@ -57,7 +57,7 @@ def cnn_build(embed_input1, embed_input2):
     return Reshape((1,))(z)
 
 
-def cnn_cache(embed_input):
+def cnn_encode(embed_input):
     ca1 = SeparableConv1D(filters=64, kernel_size=1, padding='same', activation='relu', name='conv1')
     ca2 = SeparableConv1D(filters=64, kernel_size=2, padding='same', activation='relu', name='conv2')
     ca3 = SeparableConv1D(filters=64, kernel_size=3, padding='same', activation='relu', name='conv3')
@@ -73,7 +73,7 @@ def cnn_cache(embed_input):
     return da(x)
 
 
-def rnn_build(embed_input1, embed_input2):
+def rnn(embed_input1, embed_input2):
     mask = Masking()
     ra = LSTM(200, activation='tanh', name='encode')
     norm = Lambda(lambda a: K.sum(K.square(a), axis=-1))
@@ -85,7 +85,7 @@ def rnn_build(embed_input1, embed_input2):
     return Reshape((1,))(z)
 
 
-def rnn_cache(embed_input):
+def rnn_encode(embed_input):
     ra = LSTM(200, activation='tanh', name='encode')
     x = Masking()(embed_input)
     return ra(x)
