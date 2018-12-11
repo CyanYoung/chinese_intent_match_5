@@ -70,15 +70,20 @@ def cnn_encode(embed_input):
 
 def rnn(embed_input1, embed_input2):
     mask = Masking()
-    ra = LSTM(200, activation='tanh', name='encode')
+    ra = LSTM(200, activation='tanh', name='encode1')
+    da = Dense(200, activation='relu', name='encode2')
     x = mask(embed_input1)
     x = ra(x)
+    x = da(x)
     y = mask(embed_input2)
     y = ra(y)
+    y = da(y)
     return Dot(1, normalize=True)([x, y])
 
 
 def rnn_encode(embed_input):
-    ra = LSTM(200, activation='tanh', name='encode')
+    ra = LSTM(200, activation='tanh', name='encode1')
+    da = Dense(200, activation='relu', name='encode2')
     x = Masking()(embed_input)
-    return ra(x)
+    x = ra(x)
+    return da(x)
