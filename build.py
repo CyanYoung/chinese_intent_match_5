@@ -6,8 +6,6 @@ from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from keras.utils import plot_model
 
-import keras.backend as K
-
 from nn_arch import dnn, cnn, rnn
 
 from util import map_item
@@ -37,15 +35,6 @@ paths = {'dnn': 'model/dnn.h5',
          'rnn_plot': 'model/plot/rnn.png'}
 
 
-def pair_loss(flag, dist):
-    return K.mean(flag * K.maximum(0.0, flag - dist) + (1.0 - flag) * dist, axis=-1)
-
-
-def pair_acc(flag, dist):
-    return K.mean(flag * K.cast(K.greater(dist, 0.5), K.floatx()) +
-                  (1.0 - flag) * K.cast(K.less_equal(dist, 0.5), K.floatx()), axis=-1)
-
-
 def compile(name, embed_mat, seq_len):
     vocab_num, embed_len = embed_mat.shape
     embed = Embedding(input_dim=vocab_num, output_dim=embed_len,
@@ -59,7 +48,7 @@ def compile(name, embed_mat, seq_len):
     model = Model([input1, input2], output)
     model.summary()
     plot_model(model, map_item(name + '_plot', paths), show_shapes=True)
-    model.compile(loss=pair_loss, optimizer=Adam(lr=0.001), metrics=[pair_acc])
+    model.compile(loss='mean_squared_error', optimizer=Adam(lr=0.001), metrics=['accuracy'])
     return model
 
 

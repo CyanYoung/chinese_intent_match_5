@@ -69,13 +69,13 @@ models = {'dnn': load_model('dnn', embed_mat, seq_len),
 def test_pair(name, pairs, flags, thre):
     model = map_item(name, models)
     sent1s, sent2s = pairs
-    dists = model.predict([sent1s, sent2s])
-    dists = np.reshape(dists, (1, -1))[0]
-    preds = dists > thre
+    sims = model.predict([sent1s, sent2s])
+    sims = np.reshape(sims, (1, -1))[0]
+    preds = sims > thre
     print('\n%s %s %.2f\n' % (name, 'acc:', accuracy_score(flags, preds)))
-    for flag, dist, text1, text2, pred in zip(flags, dists, text1s, text2s, preds):
+    for flag, sim, text1, text2, pred in zip(flags, sims, text1s, text2s, preds):
         if flag != pred:
-            print('{} {:.3f} {} | {}'.format(flag, dist, text1, text2))
+            print('{} {:.3f} {} | {}'.format(flag, sim, text1, text2))
 
 
 def test(name, texts, labels, vote):

@@ -1,6 +1,5 @@
 from keras.layers import Dense, SeparableConv1D, LSTM
-from keras.layers import GlobalMaxPooling1D, Masking
-from keras.layers import Lambda, Concatenate, Subtract, Reshape
+from keras.layers import GlobalMaxPooling1D, Masking, Lambda, Dot, Concatenate
 
 import keras.backend as K
 
@@ -9,15 +8,13 @@ def dnn(embed_input1, embed_input2):
     mean = Lambda(lambda a: K.mean(a, axis=1), name='mean')
     da1 = Dense(200, activation='relu', name='encode1')
     da2 = Dense(200, activation='relu', name='encode2')
-    norm = Lambda(lambda a: K.sum(K.square(a), axis=-1))
     x = mean(embed_input1)
     x = da1(x)
     x = da2(x)
     y = mean(embed_input2)
     y = da1(y)
     y = da2(y)
-    z = norm(Subtract()([x, y]))
-    return Reshape((1,))(z)
+    return Dot(1, normalize=True)([x, y])
 
 
 def dnn_encode(embed_input):
@@ -36,7 +33,6 @@ def cnn(embed_input1, embed_input2):
     mp = GlobalMaxPooling1D()
     concat = Concatenate()
     da = Dense(200, activation='relu', name='encode')
-    norm = Lambda(lambda a: K.sum(K.square(a), axis=-1))
     x1 = ca1(embed_input1)
     x1 = mp(x1)
     x2 = ca2(embed_input1)
@@ -53,8 +49,7 @@ def cnn(embed_input1, embed_input2):
     y3 = mp(y3)
     y = concat([y1, y2, y3])
     y = da(y)
-    z = norm(Subtract()([x, y]))
-    return Reshape((1,))(z)
+    return Dot(1, normalize=True)([x, y])
 
 
 def cnn_encode(embed_input):
@@ -76,13 +71,11 @@ def cnn_encode(embed_input):
 def rnn(embed_input1, embed_input2):
     mask = Masking()
     ra = LSTM(200, activation='tanh', name='encode')
-    norm = Lambda(lambda a: K.sum(K.square(a), axis=-1))
     x = mask(embed_input1)
     x = ra(x)
     y = mask(embed_input2)
     y = ra(y)
-    z = norm(Subtract()([x, y]))
-    return Reshape((1,))(z)
+    return Dot(1, normalize=True)([x, y])
 
 
 def rnn_encode(embed_input):
