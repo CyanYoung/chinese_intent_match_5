@@ -43,7 +43,7 @@ def align(sents):
     return pad_sequences(seqs, maxlen=seq_len)
 
 
-def vectorize(paths, mode):
+def vectorize(path_data, path_pair, path_label, mode):
     sent1s = flat_read(path_data, 'text1')
     sent2s = flat_read(path_data, 'text2')
     labels = flat_read(path_data, 'label')
@@ -53,19 +53,19 @@ def vectorize(paths, mode):
     pad_seq1s = align(sent1s)
     pad_seq2s = align(sent2s)
     pairs = (pad_seq1s, pad_seq2s)
-    flags = np.array(flags)
+    labels = np.array(labels)
     with open(path_pair, 'wb') as f:
         pk.dump(pairs, f)
-    with open(path_flag, 'wb') as f:
-        pk.dump(flags, f)
+    with open(path_label, 'wb') as f:
+        pk.dump(labels, f)
 
 
 if __name__ == '__main__':
-    path_data = 'data/train_pair.csv'
+    path_data = 'data/train.csv'
     path_pair = 'feat/pair_train.pkl'
     path_label = 'feat/flag_train.pkl'
-    vectorize_pair(path_data, path_pair, path_flag)
-    path_data = 'data/test_pair.csv'
+    vectorize(path_data, path_pair, path_label, 'train')
+    path_data = 'data/test.csv'
     path_pair = 'feat/pair_test.pkl'
-    path_flag = 'feat/flag_test.pkl'
-    vectorize_pair(path_data, path_pair, path_flag)
+    path_label = 'feat/label_test.pkl'
+    vectorize(path_data, path_pair, path_label, 'test')
