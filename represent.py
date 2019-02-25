@@ -43,22 +43,13 @@ def align(sents):
     return pad_sequences(seqs, maxlen=seq_len)
 
 
-def vectorize(path_data, path_sent, path_label, mode):
-    sents = flat_read(path_data, 'text')
-    labels = flat_read(path_data, 'label')
-    if mode == 'train':
-        embed(sents, path_word2ind, path_word_vec, path_embed)
-    pad_seqs = align(sents)
-    with open(path_sent, 'wb') as f:
-        pk.dump(pad_seqs, f)
-    with open(path_label, 'wb') as f:
-        pk.dump(labels, f)
-
-
-def vectorize_pair(path_data, path_pair, path_flag):
+def vectorize(paths, mode):
     sent1s = flat_read(path_data, 'text1')
     sent2s = flat_read(path_data, 'text2')
-    flags = flat_read(path_data, 'flag')
+    labels = flat_read(path_data, 'label')
+    sents = sent1s + sent2s
+    if mode == 'train':
+        embed(sents, path_word2ind, path_word_vec, path_embed)
     pad_seq1s = align(sent1s)
     pad_seq2s = align(sent2s)
     pairs = (pad_seq1s, pad_seq2s)
@@ -70,17 +61,9 @@ def vectorize_pair(path_data, path_pair, path_flag):
 
 
 if __name__ == '__main__':
-    path_data = 'data/train.csv'
-    path_sent = 'feat/sent_train.pkl'
-    path_label = 'feat/label_train.pkl'
-    vectorize(path_data, path_sent, path_label, 'train')
-    path_data = 'data/test.csv'
-    path_sent = 'feat/sent_test.pkl'
-    path_label = 'feat/label_test.pkl'
-    vectorize(path_data, path_sent, path_label, 'test')
     path_data = 'data/train_pair.csv'
     path_pair = 'feat/pair_train.pkl'
-    path_flag = 'feat/flag_train.pkl'
+    path_label = 'feat/flag_train.pkl'
     vectorize_pair(path_data, path_pair, path_flag)
     path_data = 'data/test_pair.csv'
     path_pair = 'feat/pair_test.pkl'

@@ -14,11 +14,11 @@ syno_dict = load_pair(path_syno)
 
 
 def save(path, pairs):
-    head = 'text1,text2,label'
+    head = 'text1,text2,flag'
     with open(path, 'w') as f:
         f.write(head + '\n')
-        for text1, text2, label in pairs:
-            f.write(text1 + ',' + text2 + ',' + str(label) + '\n')
+        for text1, text2, flag in pairs:
+            f.write(text1 + ',' + text2 + ',' + str(flag) + '\n')
 
 
 def clean(text):
@@ -31,9 +31,9 @@ def prepare(path_univ, path_train, path_test):
     pairs = list()
     with open(path_univ, 'r') as f:
         for line in f:
-            num, text1, text2, label = line.strip().split('\t')
+            num, text1, text2, flag = line.strip().split('\t')
             text1, text2 = clean(text1), clean(text2)
-            pairs.append((text1, text2, label))
+            pairs.append((text1, text2, flag))
     shuffle(pairs)
     bound = int(len(pairs) * 0.9)
     save(path_train, pairs[:bound])
