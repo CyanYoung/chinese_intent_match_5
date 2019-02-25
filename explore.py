@@ -36,8 +36,10 @@ def plot_freq(items, freqs, field, u_bound):
 
 
 def statistic(path_train):
-    texts = flat_read(path_train, 'text')
+    text1s = flat_read(path_train, 'text1')
+    text2s = flat_read(path_train, 'text1')
     labels = flat_read(path_train, 'label')
+    texts = text1s + text2s
     text_str = ''.join(texts)
     text_lens = [len(text) for text in texts]
     count(path_vocab_freq, text_str, 'vocab')
