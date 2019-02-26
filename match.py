@@ -31,8 +31,7 @@ def predict(text1, text2, name):
     model = map_item(name, models)
     with torch.no_grad():
         model.eval()
-        probs = F.softmax(model(sent), dim=1)
-    prob = model.predict([pad_seq1, pad_seq2])[0][0]
+        prob = torch.sigmoid(model(sent1, sent2))[0][0]
     return '{:.3f}'.format(prob)
 
 

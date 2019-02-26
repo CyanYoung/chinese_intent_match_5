@@ -1,5 +1,7 @@
 import pickle as pk
 
+import torch
+
 from sklearn.metrics import f1_score, accuracy_score
 
 from match import models
@@ -18,7 +20,10 @@ with open(path_label, 'rb') as f:
 def test(name, pairs, labels, thre):
     model = map_item(name, models)
     sent1s, sent2s = pairs
-    probs = model.predict([sent1s, sent2s])
+    with torch.no_grad():
+        model.eval()
+        probs = torch.sigmoid(model(sent1s, sent2s))
+    probs = torch.squeeze(probs, dim=-1)
     preds = probs > thre
     print('\n%s f1: %.2f - acc: %.2f' % (name, f1_score(labels, preds),
                                          accuracy_score(labels, preds)))
