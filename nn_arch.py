@@ -1,61 +1,115 @@
-from keras.layers import LSTM, Dense, Bidirectional, Dropout, Lambda
-from keras.layers import Concatenate, Flatten, Reshape, Subtract, Multiply, Dot
-
-import keras.backend as K
-from keras.engine.topology import Layer
+import torch
+import torch.nn as nn
 
 
-class Attend(Layer):
-    def __init__(self, unit, **kwargs):
-        self.unit = unit
-        super(Attend, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        assert isinstance(input_shape, list)
-        self.seq_len = input_shape[0][1]
-        self.embed_len = input_shape[0][2]
-        self.w = self.add_weight(name='w', shape=(self.embed_len * 2, self.unit),
-                                 initializer='glorot_uniform')
-        self.b1 = self.add_weight(name='b1', shape=(self.unit,),
-                                  initializer='zeros')
-        self.v = self.add_weight(name='v', shape=(self.unit, 1),
-                                 initializer='glorot_uniform')
-        self.b2 = self.add_weight(name='b2', shape=(1,), initializer='zeros')
-        super(Attend, self).build(input_shape)
-
-    def call(self, x):
-        assert isinstance(x, list)
-        h1, h2 = x
-        c = list()
-        for i in range(self.seq_len):
-            h2_i = K.repeat(h2[:, i, :], self.seq_len - 1)
-            x = K.concatenate([h1, h2_i])
-            p = K.tanh(K.dot(x, self.w) + self.b1)
-            p = K.softmax(K.dot(p, self.v) + self.b2)
-            p = K.squeeze(p, axis=-1)
-            p = K.repeat(p, self.embed_len)
-            p = K.permute_dimensions(p, (0, 2, 1))
-            c_i = K.sum(p * h1, axis=1, keepdims=True)
-            c.append(c_i)
-        return K.concatenate(c, axis=1)
-
-    def compute_output_shape(self, input_shape):
-        assert isinstance(input_shape, list)
-        return input_shape[0]
+seq_len = 30
 
 
-def esi(embed_input1, embed_input2):
-    ra1 = LSTM(200, activation='tanh')
-    ra2 = LSTM(200, activation='tanh')
-    ba1 = Bidirectional(ra1, merge_mode='concat')
-    ba2 = Bidirectional(ra2, merge_mode='concat')
-    da1 = Dense(200, activation='relu')
-    da2 = Dense(1, activation='sigmoid')
-    x = ba1(embed_input1)
-    y = ba2(embed_input2)
-    diff = Lambda(lambda a: K.abs(a))(Subtract()([x, y]))
-    prod = Multiply()([x, y])
-    z = Concatenate()([x, y, diff, prod])
-    z = da1(z)
-    z = Dropout(0.2)(z)
-    return da2(z)
+class Dnn(nn.Module):
+    def __init__(self, embed_mat):
+        super(Dnn, self).__init__()
+        self.encode = DnnEncode(embed_mat)
+        self.match = Match()
+
+    def forward(self, x, y):
+        x = self.encode(x)
+        y = self.encode(y)
+        return self.match(x, y)
+
+
+class DnnEncode(nn.Module):
+    def __init__(self, embed_mat):
+        super(DnnEncode, self).__init__()
+        vocab_num, embed_len = embed_mat.size()
+        self.embed = nn.Embedding(vocab_num, embed_len)
+        self.da1 = nn.Sequential(nn.Linear(embed_len, 200),
+                                 nn.ReLU())
+        self.da2 = nn.Sequential(nn.Linear(200, 200),
+                                 nn.ReLU())
+
+    def forward(self, x):
+        x = self.embed(x)
+        x = torch.mean(x, dim=1)
+        x = self.da1(x)
+        return self.da2(x)
+
+
+class Cnn(nn.Module):
+    def __init__(self, embed_mat):
+        super(Cnn, self).__init__()
+        self.encode = CnnEncode(embed_mat)
+        self.match = Match()
+
+    def forward(self, x, y):
+        x = self.encode(x)
+        y = self.encode(y)
+        return self.match(x, y)
+
+
+class CnnEncode(nn.Module):
+    def __init__(self, embed_mat):
+        super(CnnEncode, self).__init__()
+        vocab_num, embed_len = embed_mat.size()
+        self.embed = nn.Embedding(vocab_num, embed_len)
+        self.cap1 = nn.Sequential(nn.Conv1d(embed_len, 64, kernel_size=1, padding=0),
+                                  nn.ReLU(),
+                                  nn.MaxPool1d(seq_len))
+        self.cap2 = nn.Sequential(nn.Conv1d(embed_len, 64, kernel_size=2, padding=1),
+                                  nn.ReLU(),
+                                  nn.MaxPool1d(seq_len + 1))
+        self.cap3 = nn.Sequential(nn.Conv1d(embed_len, 64, kernel_size=3, padding=1),
+                                  nn.ReLU(),
+                                  nn.MaxPool1d(seq_len))
+        self.da = nn.Sequential(nn.Linear(192, 200),
+                                nn.ReLU())
+
+    def forward(self, x):
+        x = self.embed(x)
+        x = x.permute(0, 2, 1)
+        x1 = self.cap1(x)
+        x2 = self.cap2(x)
+        x3 = self.cap3(x)
+        x = torch.cat((x1, x2, x3), dim=1)
+        x = x.view(x.size(0), -1)
+        return self.da(x)
+
+
+class Rnn(nn.Module):
+    def __init__(self, embed_mat):
+        super(Rnn, self).__init__()
+        self.encode = RnnEncode(embed_mat)
+        self.match = Match()
+
+    def forward(self, x, y):
+        x = self.encode(x)
+        y = self.encode(y)
+        return self.match(x, y)
+
+
+class RnnEncode(nn.Module):
+    def __init__(self, embed_mat):
+        super(RnnEncode, self).__init__()
+        vocab_num, embed_len = embed_mat.size()
+        self.embed = nn.Embedding(vocab_num, embed_len)
+        self.ra = nn.LSTM(embed_len, 200, batch_first=True)
+
+    def forward(self, x):
+        x = self.embed(x)
+        h, hc_n = self.ra(x)
+        return h[:, -1, :]
+
+
+class Match(nn.Module):
+    def __init__(self):
+        super(Match, self).__init__()
+        self.la = nn.Sequential(nn.Linear(800, 200),
+                                nn.ReLU())
+        self.dl = nn.Sequential(nn.Dropout(0.2),
+                                nn.Linear(200, 1))
+
+    def forward(self, x, y):
+        diff = torch.abs(x - y)
+        prod = x * y
+        z = torch.cat([x, y, diff, prod], dim=1)
+        z = self.la(z)
+        return self.dl(z)
