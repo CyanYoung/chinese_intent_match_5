@@ -27,7 +27,7 @@ def clean(text):
     return word_replace(text, syno_dict)
 
 
-def prepare(path_univ, path_train, path_test):
+def prepare(path_univ, path_train, path_dev, path_test):
     pairs = list()
     with open(path_univ, 'r') as f:
         for line in f:
@@ -35,13 +35,16 @@ def prepare(path_univ, path_train, path_test):
             text1, text2 = clean(text1), clean(text2)
             pairs.append((text1, text2, label))
     shuffle(pairs)
-    bound = int(len(pairs) * 0.9)
-    save(path_train, pairs[:bound])
-    save(path_test, pairs[bound:])
+    bound1 = int(len(pairs) * 0.7)
+    bound2 = int(len(pairs) * 0.9)
+    save(path_train, pairs[:bound1])
+    save(path_dev, pairs[bound1:bound2])
+    save(path_test, pairs[bound2:])
 
 
 if __name__ == '__main__':
     path_univ = 'data/univ.csv'
     path_train = 'data/train.csv'
+    path_dev = 'data/dev.csv'
     path_test = 'data/test.csv'
-    prepare(path_univ, path_train, path_test)
+    prepare(path_univ, path_train, path_dev, path_test)

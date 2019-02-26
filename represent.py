@@ -92,6 +92,10 @@ if __name__ == '__main__':
     path_pair = 'feat/pair_train.pkl'
     path_label = 'feat/label_train.pkl'
     vectorize(path_data, path_pair, path_label, 'train')
+    path_data = 'data/dev.csv'
+    path_pair = 'feat/pair_dev.pkl'
+    path_label = 'feat/label_dev.pkl'
+    vectorize(path_data, path_pair, path_label, 'dev')
     path_data = 'data/test.csv'
     path_pair = 'feat/pair_test.pkl'
     path_label = 'feat/label_test.pkl'
