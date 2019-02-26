@@ -25,15 +25,9 @@ with open(path_embed, 'rb') as f:
 with open(path_word2ind, 'rb') as f:
     word2ind = pk.load(f)
 
-paths = {'dnn': 'model/dnn.h5',
-         'cnn_1d': 'model/cnn_1d.h5',
-         'cnn_2d': 'model/cnn_2d.h5',
-         'rnn': 'model/rnn.h5'}
+paths = {'esi': 'model/rnn_esi.h5'}
 
-models = {'dnn': load_model(map_item('dnn', paths)),
-          'cnn_1d': load_model(map_item('cnn_1d', paths)),
-          'cnn_2d': load_model(map_item('cnn_2d', paths)),
-          'rnn': load_model(map_item('rnn', paths))}
+models = {'esi': load_model(map_item('esi', paths))}
 
 
 def predict(text1, text2, name):
@@ -50,7 +44,4 @@ def predict(text1, text2, name):
 if __name__ == '__main__':
     while True:
         text1, text2 = input('text1: '), input('text2: ')
-        print('dnn: %s' % predict(text1, text2, 'dnn'))
-        print('cnn_1d: %s' % predict(text1, text2, 'cnn_1d'))
-        print('cnn_2d: %s' % predict(text1, text2, 'cnn_2d'))
-        print('rnn: %s' % predict(text1, text2, 'rnn'))
+        print('esi: %s' % predict(text1, text2, 'esi'))

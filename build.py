@@ -6,7 +6,7 @@ from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from keras.utils import plot_model
 
-from nn_arch import dnn, cnn_1d, cnn_2d, rnn
+from nn_arch import esi
 
 from util import map_item
 
@@ -23,19 +23,10 @@ with open(path_pair, 'rb') as f:
 with open(path_label, 'rb') as f:
     labels = pk.load(f)
 
-funcs = {'dnn': dnn,
-         'cnn_1d': cnn_1d,
-         'cnn_2d': cnn_2d,
-         'rnn': rnn}
+funcs = {'esi': esi}
 
-paths = {'dnn': 'model/dnn.h5',
-         'cnn_1d': 'model/cnn_1d.h5',
-         'cnn_2d': 'model/cnn_2d.h5',
-         'rnn': 'model/rnn.h5',
-         'dnn_plot': 'model/plot/dnn.png',
-         'cnn_1d_plot': 'model/plot/cnn_1d.png',
-         'cnn_2d_plot': 'model/plot/cnn_2d.png',
-         'rnn_plot': 'model/plot/rnn.png'}
+paths = {'esi': 'model/rnn_esi.h5',
+         'esi_plot': 'model/plot/rnn_esi.png'}
 
 
 def compile(name, embed_mat, seq_len):
@@ -65,7 +56,4 @@ def fit(name, epoch, embed_mat, pairs, labels):
 
 
 if __name__ == '__main__':
-    fit('dnn', 10, embed_mat, pairs, labels)
-    fit('cnn_1d', 10, embed_mat, pairs, labels)
-    fit('cnn_2d', 10, embed_mat, pairs, labels)
-    fit('rnn', 10, embed_mat, pairs, labels)
+    fit('esi', 10, embed_mat, pairs, labels)

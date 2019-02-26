@@ -25,7 +25,4 @@ def test(name, pairs, labels, thre):
 
 
 if __name__ == '__main__':
-    test('dnn', pairs, labels, thre=0.5)
-    test('cnn_1d', pairs, labels, thre=0.5)
-    test('cnn_2d', pairs, labels, thre=0.5)
-    test('rnn', pairs, labels, thre=0.5)
+    test('esi', pairs, labels, thre=0.5)
