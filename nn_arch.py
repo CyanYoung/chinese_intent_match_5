@@ -1,92 +1,58 @@
-from keras.layers import Dense, SeparableConv1D, SeparableConv2D, LSTM
-from keras.layers import Dropout, GlobalMaxPooling1D, MaxPooling2D, Masking, Lambda
+from keras.layers import LSTM, Dense, Bidirectional, Dropout, Lambda
 from keras.layers import Concatenate, Flatten, Reshape, Subtract, Multiply, Dot
 
 import keras.backend as K
+from keras.engine.topology import Layer
 
 
-seq_len = 30
+class Attend(Layer):
+    def __init__(self, unit, **kwargs):
+        self.unit = unit
+        super(Attend, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert isinstance(input_shape, list)
+        self.seq_len = input_shape[0][1]
+        self.embed_len = input_shape[0][2]
+        self.w = self.add_weight(name='w', shape=(self.embed_len * 2, self.unit),
+                                 initializer='glorot_uniform')
+        self.b1 = self.add_weight(name='b1', shape=(self.unit,),
+                                  initializer='zeros')
+        self.v = self.add_weight(name='v', shape=(self.unit, 1),
+                                 initializer='glorot_uniform')
+        self.b2 = self.add_weight(name='b2', shape=(1,), initializer='zeros')
+        super(Attend, self).build(input_shape)
+
+    def call(self, x):
+        assert isinstance(x, list)
+        h1, h2 = x
+        c = list()
+        for i in range(self.seq_len):
+            h2_i = K.repeat(h2[:, i, :], self.seq_len - 1)
+            x = K.concatenate([h1, h2_i])
+            p = K.tanh(K.dot(x, self.w) + self.b1)
+            p = K.softmax(K.dot(p, self.v) + self.b2)
+            p = K.squeeze(p, axis=-1)
+            p = K.repeat(p, self.embed_len)
+            p = K.permute_dimensions(p, (0, 2, 1))
+            c_i = K.sum(p * h1, axis=1, keepdims=True)
+            c.append(c_i)
+        return K.concatenate(c, axis=1)
+
+    def compute_output_shape(self, input_shape):
+        assert isinstance(input_shape, list)
+        return input_shape[0]
 
 
-def dnn(embed_input1, embed_input2):
-    mean = Lambda(lambda a: K.mean(a, axis=1))
-    da1 = Dense(200, activation='relu')
-    da2 = Dense(200, activation='relu')
-    da3 = Dense(200, activation='relu')
-    da4 = Dense(1, activation='sigmoid')
-    x = mean(embed_input1)
-    x = da1(x)
-    x = da2(x)
-    y = mean(embed_input2)
-    y = da1(y)
-    y = da2(y)
-    diff = Lambda(lambda a: K.abs(a))(Subtract()([x, y]))
-    prod = Multiply()([x, y])
-    z = Concatenate()([x, y, diff, prod])
-    z = da3(z)
-    z = Dropout(0.2)(z)
-    return da4(z)
-
-
-def cnn_1d(embed_input1, embed_input2):
-    ca1 = SeparableConv1D(filters=64, kernel_size=1, padding='same', activation='relu')
-    ca2 = SeparableConv1D(filters=64, kernel_size=2, padding='same', activation='relu')
-    ca3 = SeparableConv1D(filters=64, kernel_size=3, padding='same', activation='relu')
-    mp = GlobalMaxPooling1D()
-    da1 = Dense(200, activation='relu')
-    da2 = Dense(200, activation='relu')
-    da3 = Dense(1, activation='sigmoid')
-    x1 = ca1(embed_input1)
-    x1 = mp(x1)
-    x2 = ca2(embed_input1)
-    x2 = mp(x2)
-    x3 = ca3(embed_input1)
-    x3 = mp(x3)
-    x = Concatenate()([x1, x2, x3])
-    x = da1(x)
-    y1 = ca1(embed_input2)
-    y1 = mp(y1)
-    y2 = ca2(embed_input2)
-    y2 = mp(y2)
-    y3 = ca3(embed_input2)
-    y3 = mp(y3)
-    y = Concatenate()([y1, y2, y3])
-    y = da1(y)
-    diff = Lambda(lambda a: K.abs(a))(Subtract()([x, y]))
-    prod = Multiply()([x, y])
-    z = Concatenate()([x, y, diff, prod])
-    z = da2(z)
-    z = Dropout(0.2)(z)
-    return da3(z)
-
-
-def cnn_2d(embed_input1, embed_input2):
-    ca1 = SeparableConv2D(filters=64, kernel_size=2, padding='same', activation='relu')
-    ca2 = SeparableConv2D(filters=64, kernel_size=3, padding='same', activation='relu')
-    mp1 = MaxPooling2D(3)
-    mp2 = MaxPooling2D(5)
+def esi(embed_input1, embed_input2):
+    ra1 = LSTM(200, activation='tanh')
+    ra2 = LSTM(200, activation='tanh')
+    ba1 = Bidirectional(ra1, merge_mode='concat')
+    ba2 = Bidirectional(ra2, merge_mode='concat')
     da1 = Dense(200, activation='relu')
     da2 = Dense(1, activation='sigmoid')
-    x = Dot(2)([embed_input1, embed_input2])
-    x = Reshape((seq_len, seq_len, 1))(x)
-    x = ca1(x)
-    x = mp1(x)
-    x = ca2(x)
-    x = mp2(x)
-    x = Flatten()(x)
-    x = da1(x)
-    x = Dropout(0.2)(x)
-    return da2(x)
-
-
-def rnn(embed_input1, embed_input2):
-    ra = LSTM(200, activation='tanh')
-    da1 = Dense(200, activation='relu')
-    da2 = Dense(1, activation='sigmoid')
-    x = Masking()(embed_input1)
-    x = ra(x)
-    y = Masking()(embed_input2)
-    y = ra(y)
+    x = ba1(embed_input1)
+    y = ba2(embed_input2)
     diff = Lambda(lambda a: K.abs(a))(Subtract()([x, y]))
     prod = Multiply()([x, y])
     z = Concatenate()([x, y, diff, prod])
