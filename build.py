@@ -7,7 +7,7 @@ from torch.nn import BCEWithLogitsLoss
 from torch.optim import Adam
 from torch.utils.data import TensorDataset, DataLoader
 
-from nn_arch import Dnn, Cnn, Rnn
+from nn_arch import Esi
 
 from util import map_item
 
@@ -22,25 +22,21 @@ path_embed = 'feat/embed.pkl'
 with open(path_embed, 'rb') as f:
     embed_mat = pk.load(f)
 
-archs = {'dnn': Dnn,
-         'cnn': Cnn,
-         'rnn': Rnn}
+archs = {'esi': Esi}
 
-paths = {'dnn': 'model/dnn.pkl',
-         'cnn': 'model/cnn.pkl',
-         'rnn': 'model/rnn.pkl'}
+paths = {'esi': 'model/esi.pkl'}
 
 
 def load_feat(path_feats):
     with open(path_feats['pair_train'], 'rb') as f:
         train_sent1s, train_sent2s = pk.load(f)
-    with open(path_feats['flag_train'], 'rb') as f:
-        train_flags = pk.load(f)
+    with open(path_feats['label_train'], 'rb') as f:
+        train_labels = pk.load(f)
     with open(path_feats['pair_dev'], 'rb') as f:
         dev_sent1s, dev_sent2s = pk.load(f)
-    with open(path_feats['flag_dev'], 'rb') as f:
-        dev_flags = pk.load(f)
-    return train_sent1s, train_sent2s, train_flags, dev_sent1s, dev_sent2s, dev_flags
+    with open(path_feats['label_dev'], 'rb') as f:
+        dev_labels = pk.load(f)
+    return train_sent1s, train_sent2s, train_labels, dev_sent1s, dev_sent2s, dev_labels
 
 
 def step_print(step, batch_loss, batch_acc):
@@ -60,18 +56,18 @@ def tensorize(feats, device):
 
 
 def get_loader(triples):
-    sent1s, sent2s, flags = triples
-    triples = TensorDataset(sent1s, sent2s, flags)
+    sent1s, sent2s, labels = triples
+    triples = TensorDataset(sent1s, sent2s, labels)
     return DataLoader(triples, batch_size, shuffle=True)
 
 
 def get_metric(model, loss_func, triples, thre):
-    sent1s, sent2s, flags = triples
+    sent1s, sent2s, labels = triples
     prods = model(sent1s, sent2s)
     prods = torch.squeeze(prods, dim=-1)
     preds = prods > thre
-    loss = loss_func(prods, flags.float())
-    acc = (preds == flags.byte()).sum().item()
+    loss = loss_func(prods, labels.float())
+    acc = (preds == labels.byte()).sum().item()
     return loss, acc, len(preds)
 
 
@@ -143,9 +139,7 @@ def fit(name, max_epoch, embed_mat, path_feats, detail):
 if __name__ == '__main__':
     path_feats = dict()
     path_feats['pair_train'] = 'feat/pair_train.pkl'
-    path_feats['flag_train'] = 'feat/flag_train.pkl'
+    path_feats['label_train'] = 'feat/label_train.pkl'
     path_feats['pair_dev'] = 'feat/pair_dev.pkl'
-    path_feats['flag_dev'] = 'feat/flag_dev.pkl'
-    fit('dnn', 50, embed_mat, path_feats, detail)
-    fit('cnn', 50, embed_mat, path_feats, detail)
-    fit('rnn', 50, embed_mat, path_feats, detail)
+    path_feats['label_dev'] = 'feat/label_dev.pkl'
+    fit('esi', 50, embed_mat, path_feats, detail)
