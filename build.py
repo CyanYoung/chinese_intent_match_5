@@ -24,7 +24,7 @@ with open(path_embed, 'rb') as f:
 
 archs = {'esi': Esi}
 
-paths = {'esi': 'model/esi.pkl'}
+paths = {'esi': 'model/rnn_esi.pkl'}
 
 
 def load_feat(path_feats):

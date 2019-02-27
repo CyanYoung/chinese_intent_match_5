@@ -19,7 +19,7 @@ with open(path_word_ind, 'rb') as f:
 
 paths = {'esi': 'model/rnn_esi.pkl'}
 
-models = {'esi': torch.load(map_item('dnn', paths), map_location=device)}
+models = {'esi': torch.load(map_item('esi', paths), map_location=device)}
 
 
 def predict(text1, text2, name):
