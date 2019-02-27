@@ -36,7 +36,7 @@ class Esi(nn.Module):
         max = self.mp(x.transpose(1, 2))
         avg = torch.squeeze(avg, dim=-1)
         max = torch.squeeze(max, dim=-1)
-        return torch.cat([max, avg], dim=-1)
+        return torch.cat([avg, max], dim=-1)
 
     def forward(self, x, y):
         x, y = self.encode1(x), self.encode1(y)
