@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class Esi(nn.Module):
@@ -13,11 +14,17 @@ class Esi(nn.Module):
         self.dl = nn.Sequential(nn.Dropout(0.2),
                                 nn.Linear(200, 1))
 
-    def attend(self, x, y):
-        pass
+    @staticmethod
+    def attend(x, y):
+        d = torch.matmul(x, y.transpose(-2, -1))
+        a = F.softmax(d, dim=-1)
+        return torch.matmul(a, y)
 
-    def merge1(self, x, x_):
-        pass
+    @staticmethod
+    def merge1(x, x_):
+        diff = torch.abs(x - x_)
+        prod = x * x_
+        return torch.cat([x, x_, diff, prod], dim=-1)
 
     def merge2(self, x, y):
         pass
@@ -42,14 +49,14 @@ class Encode1(nn.Module):
     def forward(self, x):
         x = self.embed(x)
         h, hc_n = self.ra(x)
-        return h[:, -1, :]
+        return h
 
 
 class Encode2(nn.Module):
     def __init__(self):
         super(Encode2, self).__init__()
-        self.ra = nn.LSTM(800, 200, batch_first=True, bidirectional=True)
+        self.ra = nn.LSTM(400 * 4, 200, batch_first=True, bidirectional=True)
 
     def forward(self, x):
         h, hc_n = self.ra(x)
-        return h[:, -1, :]
+        return h
