@@ -35,4 +35,4 @@ def test(name, pairs, labels, thre):
 
 
 if __name__ == '__main__':
-    test('esi', pairs, labels, thre=0.5)
+    test('esi', pairs, labels, thre=0.2)
