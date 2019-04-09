@@ -26,10 +26,10 @@ class Esi(nn.Module):
         return torch.matmul(a, y)
 
     @staticmethod
-    def merge1(x, x_):
-        diff = torch.abs(x - x_)
-        prod = x * x_
-        return torch.cat([x, x_, diff, prod], dim=-1)
+    def merge1(x, y_):
+        diff = torch.abs(x - y_)
+        prod = x * y_
+        return torch.cat([x, y_, diff, prod], dim=-1)
 
     def merge2(self, x):
         avg = self.ap(x.transpose(1, 2))
@@ -40,8 +40,8 @@ class Esi(nn.Module):
 
     def forward(self, x, y):
         x, y = self.encode1(x), self.encode1(y)
-        x_, y_ = self.attend(x, y), self.attend(y, x)
-        x, y = self.merge1(x, x_), self.merge1(y, y_)
+        y_, x_ = self.attend(x, y), self.attend(y, x)
+        x, y = self.merge1(x, y_), self.merge1(y, x_)
         x, y = self.encode2(x), self.encode2(y)
         x, y = self.merge2(x), self.merge2(y)
         z = torch.cat([x, y], dim=-1)
